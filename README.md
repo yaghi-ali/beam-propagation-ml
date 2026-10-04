@@ -1,33 +1,21 @@
-# beam-propagation-ml
-Scientific machine learning project for beam propagation modeling, combining physics-based analysis with neural networks to predict beam profiles and propagation behavior.
+# Optical beam propagation — 1D FFT-BPM
 
+Ali Yaghi · OPTIQ academic photonics project.
 
-# Python programming for photonics
+The repository name is historical: the present implementation is a **physics-based split-step FFT beam-propagation model**, not a trained neural network. It supports a homogeneous medium, a slab waveguide and a two-guide coupler with a NiceGUI interface.
 
+```bash
+python -m pip install -r requirements.txt
+python main.py
+```
 
+For numerical checks without launching the interface:
+```bash
+python -m unittest -v test_bpm
+```
 
-### Objectives
-The goal of this lecture is to give you an introduction to Python programming for photonics. At the end of the course, you are supposed to acquire few important skills:
-*  Use Python to process data/images from optical experiments
-*  Use Python to simulate optical systems (numerical computing methods will not be detailed)
-*  Use Python to interact with your experimental devices via graphical user interfaces.
+`profile.py` contains `BPM1D`. All model inputs use SI units; the GUI labels indicate its micrometre/millimetre conversions. The paraxial scalar approximation, periodic FFT grid and edge absorber limit the model. Check convergence in grid size and propagation step for each application. This is not a full-vector Maxwell solver.
 
-### Prerequisites
-* Basic Python/programmation and optics knowledges
-* Don't be allergic to lines of code!
-* **Before the first class** make sure that [Anaconda](https://www.anaconda.com) and [VSCode](https://vscode.github.com) are properly installed on your PC and up-to-date. Please subscribe to a [GitHub](https://github.com) account and send me your username.
+The cleaned-up implementation fixes saved-plane indexing for small and non-divisible step counts: the initial field is now at z=0 and the last plane at the requested propagation distance. The physics core no longer imports NiceGUI.
 
-
-
-
-## Resources
-
-### Old school way
-* Official Python and specific packages documentation
-* Web search!
-
-### AI policy
-* AI tools can assist you to code efficiently but you should first learn the programming language to maintain a critical perspective 
-* Note that this course is not intended to teach you how to use AI tools.
-
-**Keep in mind that this isn’t a comprehensive tutorial and you don’t need to memorize every detail by heart! The goal is to give you enough insight to guide you towards the resources you’ll need to build and improve your code project.**
+The `docs/` notebook retains the original course context. See [VALIDATION.md](VALIDATION.md), [CONTRIBUTING.md](CONTRIBUTING.md), and the existing MIT licence. Other projects: [portfolio](https://github.com/yaghi-ali/scientific-projects).

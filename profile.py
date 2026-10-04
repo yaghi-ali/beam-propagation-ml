@@ -3,7 +3,6 @@ import io, base64
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from nicegui import ui
 
 
 # Classe BPM1D
@@ -13,6 +12,11 @@ class BPM1D:
                  z_span=5e-3, nz=1000, profile="free", delta_n=4e-3,
                  slab_core_width=10e-6, coupler_sep_factor=2.5,
                  input_waist=5e-6, input_center=0.0):
+        if min(wavelength, n0, x_span, z_span, input_waist) <= 0 or nx < 4 or nz < 1:
+            raise ValueError('Positive dimensions, nx >= 4 and nz >= 1 required.')
+        if int(nx) != nx or int(nz) != nz or profile not in ('free', 'slab', 'coupler'):
+            raise ValueError('Invalid grid or index profile.')
+        nx, nz = int(nx), int(nz)
         self.wavelength = wavelength
         self.n0 = n0
         self.x_span = x_span
@@ -81,15 +85,17 @@ class BPM1D:
     def propagate(self):
         A = self._gaussian_input().astype(np.complex128)
         P_half = np.exp(1j*self.V*(self.dz/2))
-        n_save = 200
-        I = np.empty((n_save, self.nx))
-        z_samples = np.linspace(0, self.z_span, n_save)
-        step = self.nz // n_save
-        for i in range(self.nz):
+        saved_steps = np.unique(np.linspace(0, self.nz, min(self.nz+1,200), dtype=int))
+        I = np.empty((len(saved_steps), self.nx))
+        I[0] = np.abs(A)**2
+        z_samples = saved_steps*self.dz
+        save_index = 1
+        for i in range(1,self.nz+1):
             A *= P_half
             A = np.fft.ifft(self.diff_op * np.fft.fft(A))
             A *= P_half
             A *= self.absorber
-            if i % step == 0:
-                I[i//step] = np.abs(A)**2
+            if save_index < len(saved_steps) and i == saved_steps[save_index]:
+                I[save_index] = np.abs(A)**2
+                save_index += 1
         return self.x, z_samples, I
